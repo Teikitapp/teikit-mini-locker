@@ -7,4 +7,4 @@ __pycache__/
 *.pyo
 
 # Ignorar el entorno virtual
-teikit-env/
+TeikitEnv/
