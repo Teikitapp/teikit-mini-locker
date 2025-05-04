@@ -60,35 +60,49 @@ def update_readings():
 root = tk.Tk()
 root.title("Casillero Inteligente - Teikit")
 root.configure(bg='#f54c09')
+root.geometry("800x600")
 
-# root.attributes('-fullscreen', True)
-root.geometry("800x600")  # Ajusta según tu pantalla
+# Scrollable frame
+canvas = tk.Canvas(root, bg='#f54c09', highlightthickness=0)
+scrollbar = tk.Scrollbar(root, orient="vertical", command=canvas.yview)
+scrollable_frame = tk.Frame(canvas, bg='#f54c09')
+
+scrollable_frame.bind(
+    "<Configure>",
+    lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+)
+
+canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+canvas.configure(yscrollcommand=scrollbar.set)
+
+canvas.pack(side="left", fill="both", expand=True)
+scrollbar.pack(side="right", fill="y")
 
 # Carga del logo
 try:
-    logo = Image.open("../assets/teikit_banner.png")
+    logo = Image.open("assets/teikit_banner.png")
     logo = logo.resize((int(logo.width * 0.5), int(logo.height * 0.5)))
     logo_img = ImageTk.PhotoImage(logo)
-    logo_label = tk.Label(root, image=logo_img, bg='#f54c09')
+    logo_label = tk.Label(scrollable_frame, image=logo_img, bg='#f54c09')
     logo_label.pack(pady=10)
 except Exception as e:
     print(f"No se pudo cargar el logo: {e}")
 
 # Lecturas
 label_font = ("Arial", 24, "bold")
-humidity_label = tk.Label(root, text="Humedad: ---", font=label_font, bg="#f54c09", fg="white")
+humidity_label = tk.Label(scrollable_frame, text="Humedad: ---", font=label_font, bg="#f54c09", fg="white")
 humidity_label.pack(pady=10)
 
-ambient_temp_label = tk.Label(root, text="Temp. Ambiente: ---", font=label_font, bg="#f54c09", fg="white")
+ambient_temp_label = tk.Label(scrollable_frame, text="Temp. Ambiente: ---", font=label_font, bg="#f54c09", fg="white")
 ambient_temp_label.pack(pady=10)
 
-pad_temp_label = tk.Label(root, text="Temp. del Pad: ---", font=label_font, bg="#f54c09", fg="white")
+pad_temp_label = tk.Label(scrollable_frame, text="Temp. del Pad: ---", font=label_font, bg="#f54c09", fg="white")
 pad_temp_label.pack(pady=10)
 
 # Botones
 button_font = ("Arial", 20, "bold")
 def create_button(text, command, color):
-    return tk.Button(root, text=text, command=command, font=button_font,
+    return tk.Button(scrollable_frame, text=text, command=command, font=button_font,
                      bg=color, fg="white", width=20, height=2)
 
 create_button("Activar Ventilador", lambda: control_actuator(FAN_PIN, "activate"), "#4caf50").pack(pady=5)
@@ -99,7 +113,7 @@ create_button("Activar Almohadilla", lambda: control_actuator(HEATING_PAD_PIN, "
 create_button("Desactivar Almohadilla", lambda: control_actuator(HEATING_PAD_PIN, "deactivate"), "#b71c1c").pack(pady=5)
 
 # Botón de cerrar
-tk.Button(root, text="Cerrar", font=("Arial", 18, "bold"),
+tk.Button(scrollable_frame, text="Cerrar", font=("Arial", 18, "bold"),
           bg="#ff4d4d", fg="white", command=lambda: (GPIO.cleanup(), root.destroy()),
           width=10, height=2).pack(pady=20)
 
