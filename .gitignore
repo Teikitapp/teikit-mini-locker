@@ -1,0 +1,10 @@
+# Ignorar archivos de entorno (archivos .env)
+*.env
+
+# Ignorar cache de Python (archivos .pyc y __pycache__)
+__pycache__/
+*.pyc
+*.pyo
+
+# Ignorar el entorno virtual
+teikit-env/
