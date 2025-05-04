@@ -62,11 +62,11 @@ root.title("Casillero Inteligente - Teikit")
 root.configure(bg='#f54c09')
 
 # root.attributes('-fullscreen', True)
-root.geometry("1024x600")  # Ajusta según tu pantalla
+root.geometry("800x600")  # Ajusta según tu pantalla
 
 # Carga del logo
 try:
-    logo = Image.open("../assets/teikit_banner.png")  # Ajusta la ruta si es necesario
+    logo = Image.open("../assets/teikit_banner.png")
     logo = logo.resize((int(logo.width * 0.5), int(logo.height * 0.5)))
     logo_img = ImageTk.PhotoImage(logo)
     logo_label = tk.Label(root, image=logo_img, bg='#f54c09')
