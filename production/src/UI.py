@@ -4,7 +4,7 @@ import board
 import adafruit_dht
 from PIL import Image, ImageTk
 
-# Configuración de los pines
+# Pines
 DHT_SENSOR_PIN = board.D5
 device_file = '/sys/bus/w1/devices/28-3de10457e49d/w1_slave'
 
@@ -56,66 +56,70 @@ def update_readings():
 
     root.after(2000, update_readings)
 
-# UI
+# Ventana principal
 root = tk.Tk()
-root.title("Casillero Inteligente - Teikit")
+root.attributes('-fullscreen', True)
 root.configure(bg='#f54c09')
-root.geometry("800x600")
 
-# Scrollable frame
+# Scroll con canvas
 canvas = tk.Canvas(root, bg='#f54c09', highlightthickness=0)
 scrollbar = tk.Scrollbar(root, orient="vertical", command=canvas.yview)
-scrollable_frame = tk.Frame(canvas, bg='#f54c09')
-
-scrollable_frame.bind(
-    "<Configure>",
-    lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
-)
-
-canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
 canvas.configure(yscrollcommand=scrollbar.set)
+
+scrollable_frame = tk.Frame(canvas, bg='#f54c09')
+canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+
+def on_configure(event):
+    canvas.configure(scrollregion=canvas.bbox('all'))
+scrollable_frame.bind("<Configure>", on_configure)
 
 canvas.pack(side="left", fill="both", expand=True)
 scrollbar.pack(side="right", fill="y")
 
-# Carga del logo
+# Carga de imagen
 try:
-    logo = Image.open("assets/teikit_banner.png")
-    logo = logo.resize((int(logo.width * 0.5), int(logo.height * 0.5)))
+    logo = Image.open("../assets/teikit_banner.png")
+    logo = logo.resize((logo.width // 2, logo.height // 2))
     logo_img = ImageTk.PhotoImage(logo)
     logo_label = tk.Label(scrollable_frame, image=logo_img, bg='#f54c09')
-    logo_label.pack(pady=10)
+    logo_label.grid(row=0, column=0, columnspan=2, pady=20)
 except Exception as e:
     print(f"No se pudo cargar el logo: {e}")
 
-# Lecturas
-label_font = ("Arial", 24, "bold")
+# Etiquetas de lectura
+label_font = ("Arial", 30, "bold")
 humidity_label = tk.Label(scrollable_frame, text="Humedad: ---", font=label_font, bg="#f54c09", fg="white")
-humidity_label.pack(pady=10)
+humidity_label.grid(row=1, column=0, columnspan=2, pady=10)
 
 ambient_temp_label = tk.Label(scrollable_frame, text="Temp. Ambiente: ---", font=label_font, bg="#f54c09", fg="white")
-ambient_temp_label.pack(pady=10)
+ambient_temp_label.grid(row=2, column=0, columnspan=2, pady=10)
 
 pad_temp_label = tk.Label(scrollable_frame, text="Temp. del Pad: ---", font=label_font, bg="#f54c09", fg="white")
-pad_temp_label.pack(pady=10)
+pad_temp_label.grid(row=3, column=0, columnspan=2, pady=10)
 
 # Botones
-button_font = ("Arial", 20, "bold")
-def create_button(text, command, color):
-    return tk.Button(scrollable_frame, text=text, command=command, font=button_font,
-                     bg=color, fg="white", width=20, height=2)
+button_font = ("Arial", 28, "bold")
+def create_button(row, col, text, command, color):
+    button = tk.Button(scrollable_frame, text=text, command=command, font=button_font,
+                       bg=color, fg="white", width=20, height=2)
+    button.grid(row=row, column=col, padx=10, pady=10, sticky="nsew")
 
-create_button("Activar Ventilador", lambda: control_actuator(FAN_PIN, "activate"), "#4caf50").pack(pady=5)
-create_button("Desactivar Ventilador", lambda: control_actuator(FAN_PIN, "deactivate"), "#b71c1c").pack(pady=5)
-create_button("Abrir Cerradura", lambda: control_actuator(LOCK_PIN, "activate"), "#4caf50").pack(pady=5)
-create_button("Cerrar Cerradura", lambda: control_actuator(LOCK_PIN, "deactivate"), "#b71c1c").pack(pady=5)
-create_button("Activar Almohadilla", lambda: control_actuator(HEATING_PAD_PIN, "activate"), "#4caf50").pack(pady=5)
-create_button("Desactivar Almohadilla", lambda: control_actuator(HEATING_PAD_PIN, "deactivate"), "#b71c1c").pack(pady=5)
+create_button(4, 0, "Activar Ventilador", lambda: control_actuator(FAN_PIN, "activate"), "#4caf50")
+create_button(4, 1, "Desactivar Ventilador", lambda: control_actuator(FAN_PIN, "deactivate"), "#b71c1c")
+create_button(5, 0, "Abrir Cerradura", lambda: control_actuator(LOCK_PIN, "activate"), "#4caf50")
+create_button(5, 1, "Cerrar Cerradura", lambda: control_actuator(LOCK_PIN, "deactivate"), "#b71c1c")
+create_button(6, 0, "Activar Almohadilla", lambda: control_actuator(HEATING_PAD_PIN, "activate"), "#4caf50")
+create_button(6, 1, "Desactivar Almohadilla", lambda: control_actuator(HEATING_PAD_PIN, "deactivate"), "#b71c1c")
 
-# Botón de cerrar
-tk.Button(scrollable_frame, text="Cerrar", font=("Arial", 18, "bold"),
-          bg="#ff4d4d", fg="white", command=lambda: (GPIO.cleanup(), root.destroy()),
-          width=10, height=2).pack(pady=20)
+# Botón salir
+exit_btn = tk.Button(scrollable_frame, text="Cerrar", font=("Arial", 26, "bold"),
+                     bg="#ff4d4d", fg="white", command=lambda: (GPIO.cleanup(), root.destroy()),
+                     width=15, height=2)
+exit_btn.grid(row=7, column=0, columnspan=2, pady=40)
+
+# Expansión de columnas
+scrollable_frame.grid_columnconfigure(0, weight=1)
+scrollable_frame.grid_columnconfigure(1, weight=1)
 
 update_readings()
 root.mainloop()
