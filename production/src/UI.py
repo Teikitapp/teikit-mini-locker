@@ -60,17 +60,19 @@ def update_readings():
 root = tk.Tk()
 root.title("Casillero Inteligente - Teikit")
 root.configure(bg='#f54c09')
-root.attributes('-fullscreen', True)
 
-# Logo (opcional)
+# root.attributes('-fullscreen', True)
+root.geometry("1024x600")  # Ajusta según tu pantalla
+
+# Carga del logo
 try:
-    logo = Image.open("../assets/teikit_banner.png")
+    logo = Image.open("assets/teikit_banner.png")  # Ajusta la ruta si es necesario
     logo = logo.resize((int(logo.width * 0.5), int(logo.height * 0.5)))
     logo_img = ImageTk.PhotoImage(logo)
     logo_label = tk.Label(root, image=logo_img, bg='#f54c09')
     logo_label.pack(pady=10)
-except Exception:
-    pass
+except Exception as e:
+    print(f"No se pudo cargar el logo: {e}")
 
 # Lecturas
 label_font = ("Arial", 24, "bold")
