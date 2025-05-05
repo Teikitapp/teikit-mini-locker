@@ -71,70 +71,72 @@ def update_readings():
     update_actuator_states()
     root.after(2000, update_readings)
 
-# Ventana principal
+# UI
 root = tk.Tk()
 root.title("Casillero Inteligente - Teikit")
 root.attributes('-fullscreen', True)
 root.configure(bg='#f54c09')
 
-# Contenedor principal centrado
-main_frame = tk.Frame(root, bg='#f54c09')
-main_frame.pack(expand=True)
+# Configurar grid
+root.rowconfigure(list(range(7)), weight=1)
+root.columnconfigure(0, weight=1)
 
 # Logo
 try:
     logo = Image.open("../assets/teikit_banner.png")
-    logo = logo.resize((logo.width // 2, logo.height // 2))
+    logo = logo.resize((400, 100))
     logo_img = ImageTk.PhotoImage(logo)
-    logo_label = tk.Label(main_frame, image=logo_img, bg='#f54c09')
-    logo_label.pack(pady=10)
+    logo_label = tk.Label(root, image=logo_img, bg='#f54c09')
+    logo_label.grid(row=0, column=0, pady=5)
 except Exception as e:
     print(f"No se pudo cargar el logo: {e}")
 
-# Etiquetas de sensores
-label_font = ("Arial", 28, "bold")
-humidity_label = tk.Label(main_frame, text="Humedad: ---", font=label_font, bg="#f54c09", fg="white")
-humidity_label.pack(pady=5)
+# Sensores
+label_font = ("Arial", 20)
+humidity_label = tk.Label(root, text="Humedad: ---", font=label_font, bg="#f54c09", fg="white")
+humidity_label.grid(row=1, column=0)
 
-ambient_temp_label = tk.Label(main_frame, text="Temp. Ambiente: ---", font=label_font, bg="#f54c09", fg="white")
-ambient_temp_label.pack(pady=5)
+ambient_temp_label = tk.Label(root, text="Temp. Ambiente: ---", font=label_font, bg="#f54c09", fg="white")
+ambient_temp_label.grid(row=2, column=0)
 
-pad_temp_label = tk.Label(main_frame, text="Temp. del Pad: ---", font=label_font, bg="#f54c09", fg="white")
-pad_temp_label.pack(pady=5)
+pad_temp_label = tk.Label(root, text="Temp. del Pad: ---", font=label_font, bg="#f54c09", fg="white")
+pad_temp_label.grid(row=3, column=0)
 
 # Estados
-state_font = ("Arial", 22, "bold")
-fan_state_label = tk.Label(main_frame, text="Ventilador: ---", font=state_font, bg="#f54c09", fg="white")
-fan_state_label.pack(pady=2)
+state_font = ("Arial", 18)
+fan_state_label = tk.Label(root, text="Ventilador: ---", font=state_font, bg="#f54c09", fg="white")
+fan_state_label.grid(row=4, column=0)
 
-lock_state_label = tk.Label(main_frame, text="Cerradura: ---", font=state_font, bg="#f54c09", fg="white")
-lock_state_label.pack(pady=2)
+lock_state_label = tk.Label(root, text="Cerradura: ---", font=state_font, bg="#f54c09", fg="white")
+lock_state_label.grid(row=5, column=0)
 
-pad_state_label = tk.Label(main_frame, text="Almohadilla: ---", font=state_font, bg="#f54c09", fg="white")
-pad_state_label.pack(pady=2)
+pad_state_label = tk.Label(root, text="Almohadilla: ---", font=state_font, bg="#f54c09", fg="white")
+pad_state_label.grid(row=6, column=0)
 
-# Botones
-button_font = ("Arial", 24, "bold")
-button_width = 25
-button_height = 2
+# Frame de botones
+button_frame = tk.Frame(root, bg='#f54c09')
+button_frame.grid(row=7, column=0, pady=10)
+for i in range(2): button_frame.columnconfigure(i, weight=1)
 
-def add_button(text, command, color):
-    btn = tk.Button(main_frame, text=text, command=command, font=button_font,
-                    bg=color, fg="white", width=button_width, height=button_height)
-    btn.pack(pady=5)
+button_font = ("Arial", 16)
+btn_opts = {"font": button_font, "bg": "#4caf50", "fg": "white", "width": 18, "height": 1}
 
-add_button("Activar Ventilador", lambda: control_actuator(FAN_PIN, "activate"), "#4caf50")
-add_button("Desactivar Ventilador", lambda: control_actuator(FAN_PIN, "deactivate"), "#b71c1c")
-add_button("Abrir Cerradura", lambda: control_actuator(LOCK_PIN, "activate"), "#4caf50")
-add_button("Cerrar Cerradura", lambda: control_actuator(LOCK_PIN, "deactivate"), "#b71c1c")
-add_button("Activar Almohadilla", lambda: control_actuator(HEATING_PAD_PIN, "activate"), "#4caf50")
-add_button("Desactivar Almohadilla", lambda: control_actuator(HEATING_PAD_PIN, "deactivate"), "#b71c1c")
+buttons = [
+    ("Activar Ventilador", lambda: control_actuator(FAN_PIN, "activate")),
+    ("Desactivar Ventilador", lambda: control_actuator(FAN_PIN, "deactivate")),
+    ("Abrir Cerradura", lambda: control_actuator(LOCK_PIN, "activate")),
+    ("Cerrar Cerradura", lambda: control_actuator(LOCK_PIN, "deactivate")),
+    ("Activar Almohadilla", lambda: control_actuator(HEATING_PAD_PIN, "activate")),
+    ("Desactivar Almohadilla", lambda: control_actuator(HEATING_PAD_PIN, "deactivate"))
+]
 
-# Botón de salida
-exit_btn = tk.Button(main_frame, text="Cerrar", font=("Arial", 22, "bold"),
-                     bg="#ff4d4d", fg="white", width=20, height=2,
-                     command=lambda: (GPIO.cleanup(), root.destroy()))
-exit_btn.pack(pady=30)
+for idx, (text, cmd) in enumerate(buttons):
+    bg = "#4caf50" if "Activar" in text or "Abrir" in text else "#b71c1c"
+    tk.Button(button_frame, text=text, command=cmd, bg=bg, **btn_opts).grid(row=idx // 2, column=idx % 2, padx=10, pady=5)
+
+# Botón de cerrar
+tk.Button(root, text="Cerrar", font=("Arial", 18, "bold"), bg="#ff4d4d", fg="white",
+          width=15, height=1, command=lambda: (GPIO.cleanup(), root.destroy())).grid(row=8, column=0, pady=10)
 
 update_readings()
 root.mainloop()
