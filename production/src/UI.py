@@ -46,7 +46,6 @@ def read_pad_temperature():
     return None
 
 def control_actuator(pin, state):
-    # Invertimos la lógica de activación de los pines
     GPIO.output(pin, GPIO.LOW if state == "activate" else GPIO.HIGH)
     update_actuator_states()
 
@@ -55,7 +54,7 @@ def get_state_text(pin, label_type):
     if label_type == "fan":
         return "Encendido" if state == GPIO.LOW else "Apagado"
     elif label_type == "lock":
-        return "Abierta" if state == GPIO.LOW else "Cerrada"
+        return "Abierta" if state == GPIO.HIGH else "Cerrada"
     elif label_type == "pad":
         return "Encendida" if state == GPIO.LOW else "Apagada"
 
