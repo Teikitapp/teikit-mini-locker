@@ -73,7 +73,7 @@ def update_readings():
         if len(time_data) > 50:
             for lst in [time_data, humidity_data, temperature_data, pad_temperature_data]:
                 lst.pop(0)
-        hum_label.config(text=f"Humedad: {h:.1f} %")
+        hum_label.config(text=f"Temp. Humedad: {h:.1f} %")
         amb_label.config(text=f"Temp. Ambiente: {t:.1f} °C")
         padtemp_label.config(text=f"Temp. Almohadilla: {pad_t:.1f} °C")
     update_actuator_states()
@@ -81,7 +81,6 @@ def update_readings():
     root.after(2000, update_readings)
 
 # Gráficos y UI
-
 def update_graphs():
     ax.clear()
     ax.plot(time_data, humidity_data, label="Humedad (%)", color="blue", linewidth=2)
@@ -93,16 +92,10 @@ def update_graphs():
     ax.legend(loc="upper left")
     canvas.draw()
 
-def on_close():
-    GPIO.cleanup()
-    root.destroy()
-
-# Interfaz principal
 root = tk.Tk()
 root.title("Casillero Inteligente - Teikit")
 root.attributes('-fullscreen', True)
 root.configure(bg='#f54c09')
-root.protocol("WM_DELETE_WINDOW", on_close)
 
 # Logo
 try:
@@ -119,35 +112,31 @@ right = tk.Frame(main_frame, bg="#f54c09")
 left.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 right.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
 
-# Labels sensores
-label_style = {"font": ("Noto Color Emoji", 20), "bg": "#f54c09", "fg": "white"}
+# Labels sensores (con formato adecuado)
+label_style = {"font": ("Arial", 20), "bg": "#f54c09", "fg": "white"}
 
 hum_label = tk.Label(left, text="Temp. Humedad: ---", **label_style)
 hum_label.pack(pady=5)
-
 amb_label = tk.Label(left, text="Temp. Ambiente: ---", **label_style)
 amb_label.pack(pady=5)
-
 padtemp_label = tk.Label(left, text="Temp. Almohadilla: ---", **label_style)
 padtemp_label.pack(pady=5)
 
 # Estados
 fan_label = tk.Label(left, text="Ventilador: ---", **label_style)
 fan_label.pack(pady=5)
-
 lock_label = tk.Label(left, text="Cerradura: ---", **label_style)
 lock_label.pack(pady=5)
-
 pad_label = tk.Label(left, text="Almohadilla: ---", **label_style)
 pad_label.pack(pady=5)
 
-
 # Botones
-btn_style = {"font": ("Arial", 14), "fg": "white", "width": 22, "height": 1}
+btn_style = {"font": ("Arial", 14), "bg": "#4caf50", "fg": "white", "width": 22, "height": 1}
 
-def add_button(text, pin, state):
+def add_button(text, pin, state, row):
     bg = "#4caf50" if "Activar" in text or "Abrir" in text else "#b71c1c"
-    tk.Button(left, text=text, command=lambda: control(pin, state), bg=bg, **btn_style).pack(pady=3)
+    btn_style["bg"] = bg
+    tk.Button(left, text=text, command=lambda: control(pin, state), **btn_style).pack(pady=3)
 
 btns = [
     ("Activar Ventilador", FAN_PIN, "activate"),
@@ -157,14 +146,16 @@ btns = [
     ("Activar Almohadilla", HEATING_PAD_PIN, "activate"),
     ("Desactivar Almohadilla", HEATING_PAD_PIN, "deactivate")
 ]
-for t, p, s in btns:
-    add_button(t, p, s)
+for i, (t, p, s) in enumerate(btns):
+    add_button(t, p, s, i)
+
+# Boton cerrar
+tk.Button(root, text="Cerrar", command=root.quit, font=("Arial", 16), bg="#ff4d4d", fg="white", width=20).pack(pady=20)
 
 # Gráfico
 fig, ax = plt.subplots(figsize=(7, 4))
 canvas = FigureCanvasTkAgg(fig, master=right)
 canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
 
-# Iniciar
 update_readings()
 root.mainloop()
