@@ -82,9 +82,20 @@ def update_readings():
 def update_graphs():
     ax.clear()
     ax.set_facecolor('#f0f0f0')
-    ax.plot(time_data, humidity_data, label="Humedad (%)", color="dodgerblue", linewidth=2)
-    ax.plot(time_data, temperature_data, label="Ambiente (°C)", color="tomato", linewidth=2)
-    ax.plot(time_data, pad_temperature_data, label="Pad (°C)", color="forestgreen", linewidth=2)
+
+    # Mostrar solo los datos de los últimos 50 segundos
+    if time_data:
+        latest_time = time_data[-1]
+        time_window = 50
+        filtered_data = [(t, h, a, p) for t, h, a, p in zip(time_data, humidity_data, temperature_data, pad_temperature_data) if latest_time - t <= time_window]
+
+        # Separar los datos filtrados
+        times, humidities, ambients, pads = zip(*filtered_data)
+
+        ax.plot(times, humidities, label="Humedad (%)", color="dodgerblue", linewidth=2)
+        ax.plot(times, ambients, label="Ambiente (°C)", color="tomato", linewidth=2)
+        ax.plot(times, pads, label="Pad (°C)", color="forestgreen", linewidth=2)
+
     ax.set_title("Temperatura y Humedad", fontsize=14, color='black')
     ax.set_xlabel("Tiempo (s)", fontsize=12)
     ax.set_ylabel("Valores", fontsize=12)
@@ -92,6 +103,7 @@ def update_graphs():
     ax.grid(True, which='both', linestyle='--', linewidth=0.5)
     ax.tick_params(axis='both', which='major', labelsize=10)
     canvas.draw()
+
 
 def toggle_fullscreen(event=None):
     global fullscreen
