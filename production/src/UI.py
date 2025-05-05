@@ -39,8 +39,43 @@ def read_humidity_and_temp():
         print(f"Error DHT22: {error.args[0]}")
         return None, None
 
+def read_pad_temperature():
+    try:
+        with open(device_file, 'r') as f:
+            lines = f.readlines()
+            temp_output = lines[1].find('t=')
+            if temp_output != -1:
+                temp_string = lines[1].strip()[temp_output + 2:]
+                return float(temp_string) / 1000.0
+    except Exception as e:
+        print(f"Error Pad: {e}")
+    return None
+
+def control_actuator(pin, state):
+    if pin == LOCK_PIN:
+        # Si el estado es "activar", debe abrirse (GPIO.HIGH para abierta)
+        GPIO.output(pin, GPIO.HIGH if state == "activate" else GPIO.LOW)
+    else:
+        GPIO.output(pin, GPIO.LOW if state == "activate" else GPIO.HIGH)
+    update_actuator_states()
+
+def get_state_text(pin, label_type):
+    state = GPIO.input(pin)
+    if label_type == "fan":
+        return "Encendido" if state == GPIO.LOW else "Apagado"
+    elif label_type == "lock":
+        return "Abierta" if state == GPIO.HIGH else "Cerrada"
+    elif label_type == "pad":
+        return "Encendida" if state == GPIO.LOW else "Apagada"
+
+def update_actuator_states():
+    fan_state_label.config(text=f"Ventilador: {get_state_text(FAN_PIN, 'fan')}")
+    lock_state_label.config(text=f"Cerradura: {get_state_text(LOCK_PIN, 'lock')}")
+    pad_state_label.config(text=f"Almohadilla: {get_state_text(HEATING_PAD_PIN, 'pad')}")
+
 def update_readings():
     humidity, ambient_temp = read_humidity_and_temp()
+    pad_temp = read_pad_temperature()
 
     # Almacenar los datos
     if humidity is not None and ambient_temp is not None:
