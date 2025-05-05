@@ -20,7 +20,7 @@ GPIO.setup(HEATING_PAD_PIN, GPIO.OUT)
 
 # Estado inicial de los actuadores
 GPIO.output(FAN_PIN, GPIO.HIGH)          # Ventilador apagado
-GPIO.output(LOCK_PIN, GPIO.LOW)         # Cerradura encendida
+GPIO.output(LOCK_PIN, GPIO.HIGH)         # Cerradura cerrada
 GPIO.output(HEATING_PAD_PIN, GPIO.HIGH)  # Almohadilla apagada
 
 
@@ -46,6 +46,7 @@ def read_pad_temperature():
     return None
 
 def control_actuator(pin, state):
+    # Invertimos la lógica de activación de los pines
     GPIO.output(pin, GPIO.LOW if state == "activate" else GPIO.HIGH)
     update_actuator_states()
 
