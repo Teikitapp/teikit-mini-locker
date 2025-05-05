@@ -100,11 +100,6 @@ def toggle_fullscreen(event=None):
     else:
         root.bind('<F11>', toggle_fullscreen)
 
-def restart_system():
-    if messagebox.askyesno("Reiniciar sistema", "¿Seguro que deseas reiniciar la Raspberry Pi?"):
-        GPIO.cleanup()
-        os.system("sudo reboot")
-
 fullscreen = True
 root = tk.Tk()
 root.title("Casillero Inteligente - Teikit")
@@ -115,7 +110,7 @@ root.bind('<F11>', toggle_fullscreen)
 # Logo
 try:
     img = Image.open("../assets/teikit_banner.png")
-    img.thumbnail((400, 100))
+    img.thumbnail((400, 100), Image.LANCZOS)
     logo = ImageTk.PhotoImage(img)
     tk.Label(root, image=logo, bg="#f54c09").pack(pady=10)
 except: pass
@@ -128,7 +123,8 @@ left.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 right.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
 
 label_style = {"font": ("Arial", 20), "bg": "#f54c09", "fg": "white"}
-btn_style = {"font": ("Arial", 14), "bg": "#888", "fg": "white", "width": 10, "height": 1}
+btn_style_on = {"font": ("Arial", 14), "bg": "#a5d6a7", "fg": "black", "width": 10, "height": 1}
+btn_style_off = {"font": ("Arial", 14), "bg": "#ef9a9a", "fg": "black", "width": 10, "height": 1}
 
 # Condiciones actuales
 tk.Label(left, text="🌡️ Condiciones Actuales", font=("Arial", 22, "bold"), bg="#f54c09", fg="white").pack(pady=(0, 10))
@@ -140,7 +136,7 @@ padtemp_label = tk.Label(left, text="[---°C] Almohadilla", **label_style)
 padtemp_label.pack()
 
 # Separador visual
-tk.Label(left, text="----------------------------", font=("Arial", 18), bg="#f54c09", fg="white").pack(pady=10)
+tk.Frame(left, height=2, bd=1, relief=tk.SUNKEN, bg="white").pack(fill=tk.X, pady=15)
 
 # Controles
 tk.Label(left, text="🔧 Controles", font=("Arial", 22, "bold"), bg="#f54c09", fg="white").pack(pady=(10, 10))
@@ -149,25 +145,22 @@ fan_label = tk.Label(left, text="🌀 Ventilador: [---]", **label_style)
 fan_label.pack()
 frame_fan_btns = tk.Frame(left, bg="#f54c09")
 frame_fan_btns.pack(pady=4)
-tk.Button(frame_fan_btns, text="Encender", command=lambda: set_state(FAN_PIN, GPIO.LOW), **btn_style).pack(side=tk.LEFT, padx=5)
-tk.Button(frame_fan_btns, text="Apagar", command=lambda: set_state(FAN_PIN, GPIO.HIGH), **btn_style).pack(side=tk.LEFT, padx=5)
+tk.Button(frame_fan_btns, text="Encender", command=lambda: set_state(FAN_PIN, GPIO.LOW), **btn_style_on).pack(side=tk.LEFT, padx=5)
+tk.Button(frame_fan_btns, text="Apagar", command=lambda: set_state(FAN_PIN, GPIO.HIGH), **btn_style_off).pack(side=tk.LEFT, padx=5)
 
 lock_label = tk.Label(left, text="🔒 Cerradura: [---]", **label_style)
 lock_label.pack(pady=(10, 0))
 frame_lock_btns = tk.Frame(left, bg="#f54c09")
 frame_lock_btns.pack(pady=4)
-tk.Button(frame_lock_btns, text="Abrir", command=lambda: set_state(LOCK_PIN, GPIO.HIGH), **btn_style).pack(side=tk.LEFT, padx=5)
-tk.Button(frame_lock_btns, text="Cerrar", command=lambda: set_state(LOCK_PIN, GPIO.LOW), **btn_style).pack(side=tk.LEFT, padx=5)
+tk.Button(frame_lock_btns, text="Abrir", command=lambda: set_state(LOCK_PIN, GPIO.HIGH), **btn_style_on).pack(side=tk.LEFT, padx=5)
+tk.Button(frame_lock_btns, text="Cerrar", command=lambda: set_state(LOCK_PIN, GPIO.LOW), **btn_style_off).pack(side=tk.LEFT, padx=5)
 
 pad_label = tk.Label(left, text="🔥 Almohadilla: [---]", **label_style)
 pad_label.pack(pady=(10, 0))
 frame_pad_btns = tk.Frame(left, bg="#f54c09")
 frame_pad_btns.pack(pady=4)
-tk.Button(frame_pad_btns, text="Encender", command=lambda: set_state(HEATING_PAD_PIN, GPIO.LOW), **btn_style).pack(side=tk.LEFT, padx=5)
-tk.Button(frame_pad_btns, text="Apagar", command=lambda: set_state(HEATING_PAD_PIN, GPIO.HIGH), **btn_style).pack(side=tk.LEFT, padx=5)
-
-# Botón Reiniciar
-tk.Button(left, text="🔁 Reiniciar", command=restart_system, font=("Arial", 14), bg="#c62828", fg="white", width=20, height=1).pack(pady=(40, 10))
+tk.Button(frame_pad_btns, text="Encender", command=lambda: set_state(HEATING_PAD_PIN, GPIO.LOW), **btn_style_on).pack(side=tk.LEFT, padx=5)
+tk.Button(frame_pad_btns, text="Apagar", command=lambda: set_state(HEATING_PAD_PIN, GPIO.HIGH), **btn_style_off).pack(side=tk.LEFT, padx=5)
 
 # Botón cerrar
 root.protocol("WM_DELETE_WINDOW", lambda: (GPIO.cleanup(), root.quit()))
