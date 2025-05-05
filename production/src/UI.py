@@ -51,9 +51,9 @@ def control(pin, state):
 def get_state_icon(pin, label_type):
     state = GPIO.input(pin)
     icons = {
-        "fan": "💨 Encendido" if state == GPIO.LOW else "💤 Apagado",
-        "lock": "🔓 Abierta" if state == GPIO.HIGH else "🔒 Cerrada",
-        "pad": "🔥 Encendida" if state == GPIO.LOW else "❄️ Apagada",
+        "fan": "Encendido 💨" if state == GPIO.LOW else "Apagado 🔕",
+        "lock": "Abierta 🔓" if state == GPIO.HIGH else "Cerrada 🔒",
+        "pad": "Encendida 🔥" if state == GPIO.LOW else "Apagada ❄️",
     }
     return icons[label_type]
 
