@@ -78,6 +78,9 @@ def update_readings():
         padtemp_label.config(text=f"Temp. Almohadilla: {pad_t:.1f} °C")
     update_actuator_states()
     update_graphs()
+    # Programar la próxima actualización solo si la ventana sigue abierta
+    if not root.winfo_exists():
+        return
     root.after(2000, update_readings)
 
 # Gráficos y UI
@@ -158,4 +161,5 @@ canvas = FigureCanvasTkAgg(fig, master=right)
 canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
 
 update_readings()
+root.protocol("WM_DELETE_WINDOW", root.quit)  # Manejar el evento de cierre
 root.mainloop()
