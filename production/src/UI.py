@@ -8,6 +8,8 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.style as mplstyle
 import os
+import time
+start_time = time.time()
 
 # Configuración de estilo de matplotlib
 mplstyle.use('seaborn-v0_8-dark-palette')
@@ -65,7 +67,7 @@ def update_readings():
         humidity_data.append(h)
         temperature_data.append(t)
         pad_temperature_data.append(pad_t)
-        time_data.append(len(time_data))
+        time_data.append(round(time.time() - start_time, 1))
         if len(time_data) > 50:
             for lst in [time_data, humidity_data, temperature_data, pad_temperature_data]:
                 lst.pop(0)
