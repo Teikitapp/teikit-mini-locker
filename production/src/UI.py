@@ -132,7 +132,9 @@ buttons = [
 
 for idx, (text, cmd) in enumerate(buttons):
     bg = "#4caf50" if "Activar" in text or "Abrir" in text else "#b71c1c"
-    tk.Button(button_frame, text=text, command=cmd, bg=bg, **btn_opts).grid(row=idx // 2, column=idx % 2, padx=10, pady=5)
+    opts = btn_opts.copy()
+    opts["bg"] = bg
+    tk.Button(button_frame, text=text, command=cmd, **opts).grid(row=idx // 2, column=idx % 2, padx=10, pady=5)
 
 # Botón de cerrar
 tk.Button(root, text="Cerrar", font=("Arial", 18, "bold"), bg="#ff4d4d", fg="white",
