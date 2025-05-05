@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, messagebox
 import RPi.GPIO as GPIO
 import board
 import adafruit_dht
@@ -7,6 +7,7 @@ from PIL import Image, ImageTk
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.style as mplstyle
+import os
 
 # Configuración de estilo de matplotlib
 mplstyle.use('seaborn-v0_8-dark-palette')
@@ -99,6 +100,11 @@ def toggle_fullscreen(event=None):
     else:
         root.bind('<F11>', toggle_fullscreen)
 
+def restart_system():
+    if messagebox.askyesno("Reiniciar sistema", "¿Seguro que deseas reiniciar la Raspberry Pi?"):
+        GPIO.cleanup()
+        os.system("sudo reboot")
+
 fullscreen = True
 root = tk.Tk()
 root.title("Casillero Inteligente - Teikit")
@@ -148,7 +154,10 @@ tk.Button(frame_fan_btns, text="Apagar", command=lambda: set_state(FAN_PIN, GPIO
 
 lock_label = tk.Label(left, text="🔒 Cerradura: [---]", **label_style)
 lock_label.pack(pady=(10, 0))
-tk.Button(left, text="Abrir/Cerrar", command=lambda: control(LOCK_PIN), **btn_style).pack(pady=4)
+frame_lock_btns = tk.Frame(left, bg="#f54c09")
+frame_lock_btns.pack(pady=4)
+tk.Button(frame_lock_btns, text="Abrir", command=lambda: set_state(LOCK_PIN, GPIO.HIGH), **btn_style).pack(side=tk.LEFT, padx=5)
+tk.Button(frame_lock_btns, text="Cerrar", command=lambda: set_state(LOCK_PIN, GPIO.LOW), **btn_style).pack(side=tk.LEFT, padx=5)
 
 pad_label = tk.Label(left, text="🔥 Almohadilla: [---]", **label_style)
 pad_label.pack(pady=(10, 0))
@@ -156,6 +165,9 @@ frame_pad_btns = tk.Frame(left, bg="#f54c09")
 frame_pad_btns.pack(pady=4)
 tk.Button(frame_pad_btns, text="Encender", command=lambda: set_state(HEATING_PAD_PIN, GPIO.LOW), **btn_style).pack(side=tk.LEFT, padx=5)
 tk.Button(frame_pad_btns, text="Apagar", command=lambda: set_state(HEATING_PAD_PIN, GPIO.HIGH), **btn_style).pack(side=tk.LEFT, padx=5)
+
+# Botón Reiniciar
+tk.Button(left, text="🔁 Reiniciar", command=restart_system, font=("Arial", 14), bg="#c62828", fg="white", width=20, height=1).pack(pady=(40, 10))
 
 # Botón cerrar
 root.protocol("WM_DELETE_WINDOW", lambda: (GPIO.cleanup(), root.quit()))
