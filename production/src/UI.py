@@ -18,6 +18,12 @@ GPIO.setup(FAN_PIN, GPIO.OUT)
 GPIO.setup(LOCK_PIN, GPIO.OUT)
 GPIO.setup(HEATING_PAD_PIN, GPIO.OUT)
 
+# Estado inicial de los actuadores
+GPIO.output(FAN_PIN, GPIO.HIGH)          # Ventilador apagado
+GPIO.output(LOCK_PIN, GPIO.HIGH)         # Cerradura cerrada
+GPIO.output(HEATING_PAD_PIN, GPIO.HIGH)  # Almohadilla apagada
+
+
 def read_humidity_and_temp():
     try:
         humidity = dht_sensor.humidity
