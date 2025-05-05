@@ -61,10 +61,10 @@ def update_actuator_states():
     lock_state = GPIO.input(LOCK_PIN)
     pad_state = GPIO.input(HEATING_PAD_PIN)
 
-    fan_label.config(text=f"Ventilador: {get_state_icon(FAN_PIN, 'fan')} {'Encendido' if fan_state == GPIO.HIGH else 'Apagado'}")
+    fan_label.config(text=f"Ventilador: {get_state_icon(FAN_PIN, 'fan')} {'Encendido' if fan_state == GPIO.LOW else 'Apagado'}")
     lock_label.config(text=f"Cerradura: {get_state_icon(LOCK_PIN, 'lock')} {'Abierta' if lock_state == GPIO.HIGH else 'Cerrada'}")
-    pad_label.config(text=f"Almohadilla: {get_state_icon(HEATING_PAD_PIN, 'pad')} {'Encendida' if pad_state == GPIO.HIGH else 'Apagada'}")
-    
+    pad_label.config(text=f"Almohadilla: {get_state_icon(HEATING_PAD_PIN, 'pad')} {'Encendida' if pad_state == GPIO.LOW else 'Apagada'}")
+
 def update_readings():
     h, t = read_dht()
     pad_t = read_pad_temp()
