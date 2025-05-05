@@ -50,16 +50,20 @@ def control(pin, state):
 def get_state_icon(pin, label_type):
     state = GPIO.input(pin)
     icons = {
-        "fan": "💨" if state == GPIO.LOW else "🌀", 
-        "lock": "🔓" if state == GPIO.HIGH else "🔒",
-        "pad": "🔥" if state == GPIO.LOW else "❄️",
+        "fan": "💨" if state == GPIO.HIGH else "🌀",   # 🌀 para LOW (ventilador apagado), 💨 para HIGH (encendido)
+        "lock": "🔓" if state == GPIO.HIGH else "🔒",  # 🔓 para HIGH (cerradura abierta), 🔒 para LOW (cerrada)
+        "pad": "🔥" if state == GPIO.HIGH else "❄️",   # 🔥 para HIGH (almohadilla encendida), ❄️ para LOW (apagada)
     }
     return icons[label_type]
 
 def update_actuator_states():
-    fan_label.config(text=f"Ventilador: {get_state_icon(FAN_PIN, 'fan')} Encendido" if GPIO.input(FAN_PIN) == GPIO.LOW else "Ventilador: Apagado")
-    lock_label.config(text=f"Cerradura: {get_state_icon(LOCK_PIN, 'lock')} Abierta" if GPIO.input(LOCK_PIN) == GPIO.HIGH else "Cerradura: Cerrada")
-    pad_label.config(text=f"Almohadilla: {get_state_icon(HEATING_PAD_PIN, 'pad')} Encendida" if GPIO.input(HEATING_PAD_PIN) == GPIO.LOW else "Almohadilla: Apagada")
+    fan_state = GPIO.input(FAN_PIN)
+    lock_state = GPIO.input(LOCK_PIN)
+    pad_state = GPIO.input(HEATING_PAD_PIN)
+
+    fan_label.config(text=f"Ventilador: {get_state_icon(FAN_PIN, 'fan')} {'Encendido' if fan_state == GPIO.HIGH else 'Apagado'}")
+    lock_label.config(text=f"Cerradura: {get_state_icon(LOCK_PIN, 'lock')} {'Abierta' if lock_state == GPIO.HIGH else 'Cerrada'}")
+    pad_label.config(text=f"Almohadilla: {get_state_icon(HEATING_PAD_PIN, 'pad')} {'Encendida' if pad_state == GPIO.HIGH else 'Apagada'}")
 
 def update_readings():
     h, t = read_dht()
