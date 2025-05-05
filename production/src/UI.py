@@ -23,7 +23,6 @@ GPIO.output(FAN_PIN, GPIO.HIGH)          # Ventilador apagado
 GPIO.output(LOCK_PIN, GPIO.LOW)         # Cerradura cerrada
 GPIO.output(HEATING_PAD_PIN, GPIO.HIGH)  # Almohadilla apagada
 
-
 def read_humidity_and_temp():
     try:
         humidity = dht_sensor.humidity
@@ -46,8 +45,13 @@ def read_pad_temperature():
     return None
 
 def control_actuator(pin, state):
-    GPIO.output(pin, GPIO.LOW if state == "activate" else GPIO.HIGH)
+    if pin == LOCK_PIN:
+        # Si el estado es "activar", debe abrirse (GPIO.HIGH para abierta)
+        GPIO.output(pin, GPIO.HIGH if state == "activate" else GPIO.LOW)
+    else:
+        GPIO.output(pin, GPIO.LOW if state == "activate" else GPIO.HIGH)
     update_actuator_states()
+
 
 def get_state_text(pin, label_type):
     state = GPIO.input(pin)
