@@ -120,22 +120,27 @@ left.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 right.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
 
 # Labels sensores
-label_style = {"font": ("Arial", 20), "bg": "#f54c09", "fg": "white"}
+label_style = {"font": ("Noto Color Emoji", 20), "bg": "#f54c09", "fg": "white"}
+
+hum_label = tk.Label(left, text="Temp. Humedad: ---", **label_style)
+hum_label.pack(pady=5)
 
 amb_label = tk.Label(left, text="Temp. Ambiente: ---", **label_style)
 amb_label.pack(pady=5)
-hum_label = tk.Label(left, text="Humedad: ---", **label_style)
-hum_label.pack(pady=5)
+
 padtemp_label = tk.Label(left, text="Temp. Almohadilla: ---", **label_style)
 padtemp_label.pack(pady=5)
 
 # Estados
 fan_label = tk.Label(left, text="Ventilador: ---", **label_style)
 fan_label.pack(pady=5)
+
 lock_label = tk.Label(left, text="Cerradura: ---", **label_style)
 lock_label.pack(pady=5)
+
 pad_label = tk.Label(left, text="Almohadilla: ---", **label_style)
 pad_label.pack(pady=5)
+
 
 # Botones
 btn_style = {"font": ("Arial", 14), "fg": "white", "width": 22, "height": 1}
