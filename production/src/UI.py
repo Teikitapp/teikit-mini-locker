@@ -1,4 +1,3 @@
-# UI mejorada del casillero inteligente - Teikit
 import tkinter as tk
 from tkinter import ttk
 import RPi.GPIO as GPIO
@@ -9,7 +8,7 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.style as mplstyle
 
-# Configuracion de estilo de matplotlib
+# Configuración de estilo de matplotlib
 mplstyle.use('seaborn-v0_8-dark-palette')
 plt.rcParams.update({'axes.facecolor': 'white', 'figure.facecolor': 'white', 'axes.edgecolor': 'gray'})
 
@@ -51,16 +50,16 @@ def control(pin, state):
 def get_state_icon(pin, label_type):
     state = GPIO.input(pin)
     icons = {
-        "fan": "Encendido 💨" if state == GPIO.LOW else "Apagado 🔕",
-        "lock": "Abierta 🔓" if state == GPIO.HIGH else "Cerrada 🔒",
-        "pad": "Encendida 🔥" if state == GPIO.LOW else "Apagada ❄️",
+        "fan": "💨" if state == GPIO.LOW else "🌀",  # Más sobrio que zzz
+        "lock": "🔓" if state == GPIO.HIGH else "🔒",
+        "pad": "🔥" if state == GPIO.LOW else "❄️",
     }
     return icons[label_type]
 
 def update_actuator_states():
-    fan_label.config(text=f"Ventilador: {get_state_icon(FAN_PIN, 'fan')}")
-    lock_label.config(text=f"Cerradura: {get_state_icon(LOCK_PIN, 'lock')}")
-    pad_label.config(text=f"Almohadilla: {get_state_icon(HEATING_PAD_PIN, 'pad')}")
+    fan_label.config(text=f"Ventilador: {get_state_icon(FAN_PIN, 'fan')} Encendido" if GPIO.input(FAN_PIN) == GPIO.LOW else "Ventilador: Apagado")
+    lock_label.config(text=f"Cerradura: {get_state_icon(LOCK_PIN, 'lock')} Abierta" if GPIO.input(LOCK_PIN) == GPIO.HIGH else "Cerradura: Cerrada")
+    pad_label.config(text=f"Almohadilla: {get_state_icon(HEATING_PAD_PIN, 'pad')} Encendida" if GPIO.input(HEATING_PAD_PIN) == GPIO.LOW else "Almohadilla: Apagada")
 
 def update_readings():
     h, t = read_dht()
@@ -73,14 +72,11 @@ def update_readings():
         if len(time_data) > 50:
             for lst in [time_data, humidity_data, temperature_data, pad_temperature_data]:
                 lst.pop(0)
-        hum_label.config(text=f"Temp. Humedad: {h:.1f} %")
+        hum_label.config(text=f"Humedad: {h:.1f} %")
         amb_label.config(text=f"Temp. Ambiente: {t:.1f} °C")
         padtemp_label.config(text=f"Temp. Almohadilla: {pad_t:.1f} °C")
     update_actuator_states()
     update_graphs()
-    # Programar la próxima actualización solo si la ventana sigue abierta
-    if not root.winfo_exists():
-        return
     root.after(2000, update_readings)
 
 # Gráficos y UI
@@ -95,10 +91,24 @@ def update_graphs():
     ax.legend(loc="upper left")
     canvas.draw()
 
+def toggle_fullscreen(event=None):
+    global fullscreen
+    fullscreen = not fullscreen
+    root.attributes('-fullscreen', fullscreen)
+    if fullscreen:
+        root.bind('<Escape>', toggle_fullscreen)  # Salir del fullscreen con la tecla ESC
+    else:
+        root.bind('<F11>', toggle_fullscreen)    # Volver a fullscreen con F11
+
+fullscreen = True  # Establecer al principio en modo pantalla completa
 root = tk.Tk()
+
 root.title("Casillero Inteligente - Teikit")
-root.attributes('-fullscreen', True)
 root.configure(bg='#f54c09')
+
+# Pantalla completa
+root.attributes('-fullscreen', fullscreen)
+root.bind('<F11>', toggle_fullscreen)
 
 # Logo
 try:
@@ -115,14 +125,14 @@ right = tk.Frame(main_frame, bg="#f54c09")
 left.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 right.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
 
-# Labels sensores (con formato adecuado)
+# Estilo de las etiquetas
 label_style = {"font": ("Arial", 20), "bg": "#f54c09", "fg": "white"}
 
-hum_label = tk.Label(left, text="Temp. Humedad: ---", **label_style)
+hum_label = tk.Label(left, text="---", **label_style)
 hum_label.pack(pady=5)
-amb_label = tk.Label(left, text="Temp. Ambiente: ---", **label_style)
+amb_label = tk.Label(left, text="---", **label_style)
 amb_label.pack(pady=5)
-padtemp_label = tk.Label(left, text="Temp. Almohadilla: ---", **label_style)
+padtemp_label = tk.Label(left, text="---", **label_style)
 padtemp_label.pack(pady=5)
 
 # Estados
@@ -152,8 +162,8 @@ btns = [
 for i, (t, p, s) in enumerate(btns):
     add_button(t, p, s, i)
 
-# Boton cerrar
-tk.Button(root, text="Cerrar", command=root.quit, font=("Arial", 16), bg="#ff4d4d", fg="white", width=20).pack(pady=20)
+# Botón cerrar
+root.protocol("WM_DELETE_WINDOW", lambda: (GPIO.cleanup(), root.quit()))
 
 # Gráfico
 fig, ax = plt.subplots(figsize=(7, 4))
@@ -161,5 +171,4 @@ canvas = FigureCanvasTkAgg(fig, master=right)
 canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
 
 update_readings()
-root.protocol("WM_DELETE_WINDOW", root.quit)  # Manejar el evento de cierre
 root.mainloop()
