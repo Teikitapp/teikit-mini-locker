@@ -3,6 +3,8 @@ import RPi.GPIO as GPIO
 import board
 import adafruit_dht
 from PIL import Image, ImageTk
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 # Pines
 DHT_SENSOR_PIN = board.D5
@@ -23,6 +25,11 @@ GPIO.output(FAN_PIN, GPIO.HIGH)          # Ventilador apagado
 GPIO.output(LOCK_PIN, GPIO.LOW)         # Cerradura cerrada
 GPIO.output(HEATING_PAD_PIN, GPIO.HIGH)  # Almohadilla apagada
 
+# Listas para almacenar los valores de temperatura y humedad
+time_data = []
+humidity_data = []
+temperature_data = []
+
 def read_humidity_and_temp():
     try:
         humidity = dht_sensor.humidity
@@ -32,54 +39,47 @@ def read_humidity_and_temp():
         print(f"Error DHT22: {error.args[0]}")
         return None, None
 
-def read_pad_temperature():
-    try:
-        with open(device_file, 'r') as f:
-            lines = f.readlines()
-            temp_output = lines[1].find('t=')
-            if temp_output != -1:
-                temp_string = lines[1].strip()[temp_output + 2:]
-                return float(temp_string) / 1000.0
-    except Exception as e:
-        print(f"Error Pad: {e}")
-    return None
-
-def control_actuator(pin, state):
-    if pin == LOCK_PIN:
-        # Si el estado es "activar", debe abrirse (GPIO.HIGH para abierta)
-        GPIO.output(pin, GPIO.HIGH if state == "activate" else GPIO.LOW)
-    else:
-        GPIO.output(pin, GPIO.LOW if state == "activate" else GPIO.HIGH)
-    update_actuator_states()
-
-
-def get_state_text(pin, label_type):
-    state = GPIO.input(pin)
-    if label_type == "fan":
-        return "Encendido" if state == GPIO.LOW else "Apagado"
-    elif label_type == "lock":
-        return "Abierta" if state == GPIO.HIGH else "Cerrada"
-    elif label_type == "pad":
-        return "Encendida" if state == GPIO.LOW else "Apagada"
-
-def update_actuator_states():
-    fan_state_label.config(text=f"Ventilador: {get_state_text(FAN_PIN, 'fan')}")
-    lock_state_label.config(text=f"Cerradura: {get_state_text(LOCK_PIN, 'lock')}")
-    pad_state_label.config(text=f"Almohadilla: {get_state_text(HEATING_PAD_PIN, 'pad')}")
-
 def update_readings():
     humidity, ambient_temp = read_humidity_and_temp()
-    pad_temp = read_pad_temperature()
 
-    if humidity is not None:
+    # Almacenar los datos
+    if humidity is not None and ambient_temp is not None:
+        humidity_data.append(humidity)
+        temperature_data.append(ambient_temp)
+        time_data.append(len(time_data))  # Contar el número de lecturas (tiempo en segundos)
+
+        # Limitar el número de puntos en el gráfico a 100 para evitar que se sobrecargue
+        if len(time_data) > 100:
+            time_data.pop(0)
+            humidity_data.pop(0)
+            temperature_data.pop(0)
+
         humidity_label.config(text=f"Humedad: {humidity:.1f} %")
-    if ambient_temp is not None:
         ambient_temp_label.config(text=f"Temp. Ambiente: {ambient_temp:.1f} °C")
-    if pad_temp is not None:
-        pad_temp_label.config(text=f"Temp. del Pad: {pad_temp:.1f} °C")
 
     update_actuator_states()
+    plot_data()  # Actualizar los gráficos
     root.after(2000, update_readings)
+
+def plot_data():
+    # Crear el gráfico
+    fig, ax = plt.subplots(figsize=(5, 3))
+
+    ax.plot(time_data, humidity_data, label='Humedad', color='blue')
+    ax.plot(time_data, temperature_data, label='Temperatura', color='red')
+
+    ax.set_title("Temperatura y Humedad a lo largo del tiempo")
+    ax.set_xlabel("Tiempo (segundos)")
+    ax.set_ylabel("Valor")
+    ax.legend()
+
+    # Actualizar el canvas del gráfico en la interfaz de Tkinter
+    for widget in graph_frame.winfo_children():
+        widget.destroy()
+
+    canvas = FigureCanvasTkAgg(fig, master=graph_frame)
+    canvas.draw()
+    canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
 
 # UI
 root = tk.Tk()
@@ -109,9 +109,6 @@ humidity_label.grid(row=1, column=0)
 ambient_temp_label = tk.Label(root, text="Temp. Ambiente: ---", font=label_font, bg="#f54c09", fg="white")
 ambient_temp_label.grid(row=2, column=0)
 
-pad_temp_label = tk.Label(root, text="Temp. del Pad: ---", font=label_font, bg="#f54c09", fg="white")
-pad_temp_label.grid(row=3, column=0)
-
 # Estados
 state_font = ("Arial", 18)
 fan_state_label = tk.Label(root, text="Ventilador: ---", font=state_font, bg="#f54c09", fg="white")
@@ -123,9 +120,13 @@ lock_state_label.grid(row=5, column=0)
 pad_state_label = tk.Label(root, text="Almohadilla: ---", font=state_font, bg="#f54c09", fg="white")
 pad_state_label.grid(row=6, column=0)
 
+# Frame de gráficos
+graph_frame = tk.Frame(root, bg='#f54c09')
+graph_frame.grid(row=7, column=0, pady=10, padx=10)
+
 # Frame de botones
 button_frame = tk.Frame(root, bg='#f54c09')
-button_frame.grid(row=7, column=0, pady=10)
+button_frame.grid(row=8, column=0, pady=10)
 for i in range(2): button_frame.columnconfigure(i, weight=1)
 
 button_font = ("Arial", 16)
@@ -148,7 +149,7 @@ for idx, (text, cmd) in enumerate(buttons):
 
 # Botón de cerrar
 tk.Button(root, text="Cerrar", font=("Arial", 18, "bold"), bg="#ff4d4d", fg="white",
-          width=15, height=1, command=lambda: (GPIO.cleanup(), root.destroy())).grid(row=8, column=0, pady=10)
+          width=15, height=1, command=lambda: (GPIO.cleanup(), root.destroy())).grid(row=9, column=0, pady=10)
 
 update_readings()
 root.mainloop()
