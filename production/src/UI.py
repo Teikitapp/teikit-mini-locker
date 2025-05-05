@@ -50,7 +50,7 @@ def control(pin, state):
 def get_state_icon(pin, label_type):
     state = GPIO.input(pin)
     icons = {
-        "fan": "💨" if state == GPIO.LOW else "🌀",  # Más sobrio que zzz
+        "fan": "💨" if state == GPIO.LOW else "🌀", 
         "lock": "🔓" if state == GPIO.HIGH else "🔒",
         "pad": "🔥" if state == GPIO.LOW else "❄️",
     }
@@ -82,14 +82,29 @@ def update_readings():
 # Gráficos y UI
 def update_graphs():
     ax.clear()
-    ax.plot(time_data, humidity_data, label="Humedad (%)", color="blue", linewidth=2)
-    ax.plot(time_data, temperature_data, label="Ambiente (°C)", color="red", linewidth=2)
-    ax.plot(time_data, pad_temperature_data, label="Pad (°C)", color="green", linewidth=2)
-    ax.set_title("Temperatura y Humedad (últimos 50s)")
-    ax.set_xlabel("Tiempo")
-    ax.set_ylabel("Valores")
-    ax.legend(loc="upper left")
+
+    # Añadir un fondo con color
+    ax.set_facecolor('#f0f0f0')
+
+    # Configurar las líneas
+    ax.plot(time_data, humidity_data, label="Humedad (%)", color="dodgerblue", linewidth=2)
+    ax.plot(time_data, temperature_data, label="Ambiente (°C)", color="tomato", linewidth=2)
+    ax.plot(time_data, pad_temperature_data, label="Pad (°C)", color="forestgreen", linewidth=2)
+
+    # Añadir título y etiquetas
+    ax.set_title("Temperatura y Humedad", fontsize=14, color='black')
+    ax.set_xlabel("Tiempo (s)", fontsize=12)
+    ax.set_ylabel("Valores", fontsize=12)
+
+    # Configurar la leyenda y los estilos
+    ax.legend(loc="upper left", fontsize=10)
+    ax.grid(True, which='both', linestyle='--', linewidth=0.5)
+
+    # Mejorar la apariencia de los ejes
+    ax.tick_params(axis='both', which='major', labelsize=10)
+
     canvas.draw()
+
 
 def toggle_fullscreen(event=None):
     global fullscreen
