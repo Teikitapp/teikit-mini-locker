@@ -43,23 +43,19 @@ def read_pad_temp():
                 return float(lines[1][temp_pos + 2:]) / 1000.0
     except: return None
 
-def control(pin):
-    current_state = GPIO.input(pin)
-    new_state = GPIO.LOW if current_state == GPIO.HIGH else GPIO.HIGH
-    GPIO.output(pin, new_state)
+def set_state(pin, state):
+    GPIO.output(pin, state)
     update_actuator_states()
 
 def update_actuator_states():
     fan_state = GPIO.input(FAN_PIN)
     fan_label.config(text=f"🌀 Ventilador: [ENCENDIDO]" if fan_state == GPIO.LOW else "🌀 Ventilador: [APAGADO]")
-    fan_button.config(text="Cambiar estado")
 
     lock_state = GPIO.input(LOCK_PIN)
     lock_label.config(text=f"🔓 Cerradura: [ABIERTA]" if lock_state == GPIO.HIGH else "🔒 Cerradura: [CERRADA]")
 
     pad_state = GPIO.input(HEATING_PAD_PIN)
     pad_label.config(text=f"🔥 Almohadilla: [ENCENDIDA]" if pad_state == GPIO.LOW else "❄️ Almohadilla: [APAGADA]")
-    pad_button.config(text="Cambiar estado")
 
 def update_readings():
     h, t = read_dht()
@@ -126,7 +122,7 @@ left.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 right.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
 
 label_style = {"font": ("Arial", 20), "bg": "#f54c09", "fg": "white"}
-btn_style = {"font": ("Arial", 14), "bg": "#888", "fg": "white", "width": 22, "height": 1}
+btn_style = {"font": ("Arial", 14), "bg": "#888", "fg": "white", "width": 10, "height": 1}
 
 # Condiciones actuales
 tk.Label(left, text="🌡️ Condiciones Actuales", font=("Arial", 22, "bold"), bg="#f54c09", fg="white").pack(pady=(0, 10))
@@ -145,8 +141,10 @@ tk.Label(left, text="🔧 Controles", font=("Arial", 22, "bold"), bg="#f54c09", 
 
 fan_label = tk.Label(left, text="🌀 Ventilador: [---]", **label_style)
 fan_label.pack()
-fan_button = tk.Button(left, text="Cambiar estado", command=lambda: control(FAN_PIN), **btn_style)
-fan_button.pack(pady=4)
+frame_fan_btns = tk.Frame(left, bg="#f54c09")
+frame_fan_btns.pack(pady=4)
+tk.Button(frame_fan_btns, text="Encender", command=lambda: set_state(FAN_PIN, GPIO.LOW), **btn_style).pack(side=tk.LEFT, padx=5)
+tk.Button(frame_fan_btns, text="Apagar", command=lambda: set_state(FAN_PIN, GPIO.HIGH), **btn_style).pack(side=tk.LEFT, padx=5)
 
 lock_label = tk.Label(left, text="🔒 Cerradura: [---]", **label_style)
 lock_label.pack(pady=(10, 0))
@@ -154,8 +152,10 @@ tk.Button(left, text="Abrir/Cerrar", command=lambda: control(LOCK_PIN), **btn_st
 
 pad_label = tk.Label(left, text="🔥 Almohadilla: [---]", **label_style)
 pad_label.pack(pady=(10, 0))
-pad_button = tk.Button(left, text="Cambiar estado", command=lambda: control(HEATING_PAD_PIN), **btn_style)
-pad_button.pack(pady=4)
+frame_pad_btns = tk.Frame(left, bg="#f54c09")
+frame_pad_btns.pack(pady=4)
+tk.Button(frame_pad_btns, text="Encender", command=lambda: set_state(HEATING_PAD_PIN, GPIO.LOW), **btn_style).pack(side=tk.LEFT, padx=5)
+tk.Button(frame_pad_btns, text="Apagar", command=lambda: set_state(HEATING_PAD_PIN, GPIO.HIGH), **btn_style).pack(side=tk.LEFT, padx=5)
 
 # Botón cerrar
 root.protocol("WM_DELETE_WINDOW", lambda: (GPIO.cleanup(), root.quit()))
