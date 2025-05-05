@@ -51,9 +51,9 @@ def control(pin, state):
 def get_state_icon(pin, label_type):
     state = GPIO.input(pin)
     icons = {
-        "fan": "💨 Encendido" if state == GPIO.LOW else "💤 Apagado",
-        "lock": "🔓 Abierta" if state == GPIO.HIGH else "🔒 Cerrada",
-        "pad": "🔥 Encendida" if state == GPIO.LOW else "❄️ Apagada",
+        "fan": "Encendido" if state == GPIO.LOW else "Apagado",
+        "lock": "Abierta" if state == GPIO.HIGH else "Cerrada",
+        "pad": "Encendida" if state == GPIO.LOW else "Apagada",
     }
     return icons[label_type]
 
@@ -116,14 +116,20 @@ right.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
 # Labels sensores
 label_style = {"font": ("Arial", 20), "bg": "#f54c09", "fg": "white"}
 
-hum_label = tk.Label(left, text="---", **label_style)
+sensor_title = tk.Label(left, text="Sensores", font=("Arial", 24, "bold"), bg="#f54c09", fg="white")
+sensor_title.pack(pady=(0,10))
+
+hum_label = tk.Label(left, text="Humedad: ---", **label_style)
 hum_label.pack(pady=5)
-amb_label = tk.Label(left, text="---", **label_style)
+amb_label = tk.Label(left, text="Temperatura Ambiente: ---", **label_style)
 amb_label.pack(pady=5)
-padtemp_label = tk.Label(left, text="---", **label_style)
+padtemp_label = tk.Label(left, text="Temperatura Almohadilla: ---", **label_style)
 padtemp_label.pack(pady=5)
 
 # Estados
+status_title = tk.Label(left, text="Estado de los Componentes", font=("Arial", 24, "bold"), bg="#f54c09", fg="white")
+status_title.pack(pady=(20,10))
+
 fan_label = tk.Label(left, text="Ventilador: ---", **label_style)
 fan_label.pack(pady=5)
 lock_label = tk.Label(left, text="Cerradura: ---", **label_style)
@@ -132,12 +138,14 @@ pad_label = tk.Label(left, text="Almohadilla: ---", **label_style)
 pad_label.pack(pady=5)
 
 # Botones
-btn_style = {"font": ("Arial", 14), "bg": "#4caf50", "fg": "white", "width": 22, "height": 1}
+btn_style = {"font": ("Arial", 14), "fg": "white", "width": 22, "height": 1}
 
-def add_button(text, pin, state, row):
+button_title = tk.Label(left, text="Controles Manuales", font=("Arial", 24, "bold"), bg="#f54c09", fg="white")
+button_title.pack(pady=(20,10))
+
+def add_button(text, pin, state):
     bg = "#4caf50" if "Activar" in text or "Abrir" in text else "#b71c1c"
-    btn_style["bg"] = bg
-    tk.Button(left, text=text, command=lambda: control(pin, state), **btn_style).pack(pady=3)
+    tk.Button(left, text=text, command=lambda: control(pin, state), bg=bg, **btn_style).pack(pady=3)
 
 btns = [
     ("Activar Ventilador", FAN_PIN, "activate"),
@@ -147,8 +155,8 @@ btns = [
     ("Activar Almohadilla", HEATING_PAD_PIN, "activate"),
     ("Desactivar Almohadilla", HEATING_PAD_PIN, "deactivate")
 ]
-for i, (t, p, s) in enumerate(btns):
-    add_button(t, p, s, i)
+for t, p, s in btns:
+    add_button(t, p, s)
 
 # Boton cerrar
 tk.Button(left, text="Cerrar", command=lambda: (GPIO.cleanup(), root.destroy()), font=("Arial", 16), bg="#ff4d4d", fg="white", width=20).pack(pady=20)
