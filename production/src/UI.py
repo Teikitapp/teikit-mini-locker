@@ -101,25 +101,17 @@ def update_readings():
     root.after(2000, update_readings)
 
 def plot_data():
-    # Crear el gráfico
-    fig, ax = plt.subplots(figsize=(5, 3))
+    # Actualizar las líneas de los gráficos existentes
+    humidity_line.set_data(time_data, humidity_data)
+    temperature_line.set_data(time_data, temperature_data)
+    pad_temp_line.set_data(time_data, pad_temperature_data)
 
-    ax.plot(time_data, humidity_data, label='Humedad', color='blue')
-    ax.plot(time_data, temperature_data, label='Temperatura', color='red')
-    ax.plot(time_data, pad_temperature_data, label='Temp. Pad', color='green')
+    # Actualizar los límites del gráfico
+    ax.relim()
+    ax.autoscale_view()
 
-    ax.set_title("Temperatura y Humedad a lo largo del tiempo")
-    ax.set_xlabel("Tiempo (segundos)")
-    ax.set_ylabel("Valor")
-    ax.legend()
-
-    # Actualizar el canvas del gráfico en la interfaz de Tkinter
-    for widget in graph_frame.winfo_children():
-        widget.destroy()
-
-    canvas = FigureCanvasTkAgg(fig, master=graph_frame)
+    # Redibujar el gráfico
     canvas.draw()
-    canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
 
 # UI
 root = tk.Tk()
@@ -167,6 +159,24 @@ pad_state_label.grid(row=6, column=0)
 # Frame de gráficos
 graph_frame = tk.Frame(root, bg='#f54c09')
 graph_frame.grid(row=0, column=1, rowspan=8, padx=10, pady=10)
+
+# Crear gráfico inicialmente
+fig, ax = plt.subplots(figsize=(5, 3))
+
+# Inicializar líneas para los gráficos
+humidity_line, = ax.plot([], [], label='Humedad', color='blue')
+temperature_line, = ax.plot([], [], label='Temperatura', color='red')
+pad_temp_line, = ax.plot([], [], label='Temp. Pad', color='green')
+
+ax.set_title("Temperatura y Humedad a lo largo del tiempo")
+ax.set_xlabel("Tiempo (segundos)")
+ax.set_ylabel("Valor")
+ax.legend()
+
+# Actualizar el canvas del gráfico en la interfaz de Tkinter
+canvas = FigureCanvasTkAgg(fig, master=graph_frame)
+canvas.draw()
+canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
 
 # Frame de botones
 button_frame = tk.Frame(root, bg='#f54c09')
