@@ -136,7 +136,8 @@ btn_style = {"font": ("Arial", 14), "bg": "#4caf50", "fg": "white", "width": 22,
 
 def add_button(text, pin, state, row):
     bg = "#4caf50" if "Activar" in text or "Abrir" in text else "#b71c1c"
-    tk.Button(left, text=text, command=lambda: control(pin, state), bg=bg, **btn_style).pack(pady=3)
+    btn_style["bg"] = bg
+    tk.Button(left, text=text, command=lambda: control(pin, state), **btn_style).pack(pady=3)
 
 btns = [
     ("Activar Ventilador", FAN_PIN, "activate"),
