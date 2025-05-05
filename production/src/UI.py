@@ -25,10 +25,11 @@ GPIO.output(FAN_PIN, GPIO.HIGH)          # Ventilador apagado
 GPIO.output(LOCK_PIN, GPIO.LOW)         # Cerradura cerrada
 GPIO.output(HEATING_PAD_PIN, GPIO.HIGH)  # Almohadilla apagada
 
-# Listas para almacenar los valores de temperatura y humedad
+# Listas para almacenar los valores de temperatura, humedad y pad
 time_data = []
 humidity_data = []
 temperature_data = []
+pad_temperature_data = []
 
 def read_humidity_and_temp():
     try:
@@ -78,9 +79,10 @@ def update_readings():
     pad_temp = read_pad_temperature()
 
     # Almacenar los datos
-    if humidity is not None and ambient_temp is not None:
+    if humidity is not None and ambient_temp is not None and pad_temp is not None:
         humidity_data.append(humidity)
         temperature_data.append(ambient_temp)
+        pad_temperature_data.append(pad_temp)
         time_data.append(len(time_data))  # Contar el número de lecturas (tiempo en segundos)
 
         # Limitar el número de puntos en el gráfico a 100 para evitar que se sobrecargue
@@ -88,9 +90,11 @@ def update_readings():
             time_data.pop(0)
             humidity_data.pop(0)
             temperature_data.pop(0)
+            pad_temperature_data.pop(0)
 
         humidity_label.config(text=f"Humedad: {humidity:.1f} %")
         ambient_temp_label.config(text=f"Temp. Ambiente: {ambient_temp:.1f} °C")
+        pad_temp_label.config(text=f"Temp. del Pad: {pad_temp:.1f} °C")
 
     update_actuator_states()
     plot_data()  # Actualizar los gráficos
@@ -102,6 +106,7 @@ def plot_data():
 
     ax.plot(time_data, humidity_data, label='Humedad', color='blue')
     ax.plot(time_data, temperature_data, label='Temperatura', color='red')
+    ax.plot(time_data, pad_temperature_data, label='Temp. Pad', color='green')
 
     ax.set_title("Temperatura y Humedad a lo largo del tiempo")
     ax.set_xlabel("Tiempo (segundos)")
@@ -123,8 +128,9 @@ root.attributes('-fullscreen', True)
 root.configure(bg='#f54c09')
 
 # Configurar grid
-root.rowconfigure(list(range(7)), weight=1)
+root.rowconfigure(list(range(9)), weight=1)
 root.columnconfigure(0, weight=1)
+root.columnconfigure(1, weight=3)  # Columna para gráficos más ancha
 
 # Logo
 try:
@@ -132,7 +138,7 @@ try:
     logo = logo.resize((400, 100))
     logo_img = ImageTk.PhotoImage(logo)
     logo_label = tk.Label(root, image=logo_img, bg='#f54c09')
-    logo_label.grid(row=0, column=0, pady=5)
+    logo_label.grid(row=0, column=0, pady=5, columnspan=2)
 except Exception as e:
     print(f"No se pudo cargar el logo: {e}")
 
@@ -143,6 +149,9 @@ humidity_label.grid(row=1, column=0)
 
 ambient_temp_label = tk.Label(root, text="Temp. Ambiente: ---", font=label_font, bg="#f54c09", fg="white")
 ambient_temp_label.grid(row=2, column=0)
+
+pad_temp_label = tk.Label(root, text="Temp. del Pad: ---", font=label_font, bg="#f54c09", fg="white")
+pad_temp_label.grid(row=3, column=0)
 
 # Estados
 state_font = ("Arial", 18)
@@ -157,11 +166,11 @@ pad_state_label.grid(row=6, column=0)
 
 # Frame de gráficos
 graph_frame = tk.Frame(root, bg='#f54c09')
-graph_frame.grid(row=7, column=0, pady=10, padx=10)
+graph_frame.grid(row=0, column=1, rowspan=8, padx=10, pady=10)
 
 # Frame de botones
 button_frame = tk.Frame(root, bg='#f54c09')
-button_frame.grid(row=8, column=0, pady=10)
+button_frame.grid(row=7, column=0, pady=10)
 for i in range(2): button_frame.columnconfigure(i, weight=1)
 
 button_font = ("Arial", 16)
@@ -184,7 +193,7 @@ for idx, (text, cmd) in enumerate(buttons):
 
 # Botón de cerrar
 tk.Button(root, text="Cerrar", font=("Arial", 18, "bold"), bg="#ff4d4d", fg="white",
-          width=15, height=1, command=lambda: (GPIO.cleanup(), root.destroy())).grid(row=9, column=0, pady=10)
+          width=15, height=1, command=lambda: (GPIO.cleanup(), root.destroy())).grid(row=8, column=0, pady=10)
 
 update_readings()
 root.mainloop()
